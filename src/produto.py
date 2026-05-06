@@ -75,43 +75,6 @@ def atualizar_produto(id_produto, nome=None, preco=None, qtd=None, id_barbearia=
     if qtd is not None and not campo_inteiro_positivo(qtd):
         return 401, "A quantidade deve ser um numero inteiro maior que zero."
 
-    # valida se a barbearia existe quando id_barbearia é fornecido
-    if id_barbearia is not None:
-        codigo_barbearia, barbearia = consultar_barbearia(id_barbearia.strip())
-        if codigo_barbearia != 200:
-            return 404, "Barbearia nao encontrada."
-
-    if nome:
-        produtos[id_produto]["nome"] = nome.strip()
-    if preco:
-        produtos[id_produto]["preco_venda"] = float(str(preco).strip())
-    if qtd:
-        produtos[id_produto]["quantidade_stock"] = int(str(qtd).strip())
-    if id_barbearia:
-        produtos[id_produto]["id_barbearia"] = id_barbearia.strip()
-
-    return 200, produtos[id_produto]
-
-
-def vender_produto(id_produto, qtd_vendida):
-    if id_produto not in produtos:
-        return 404, "Produto nao encontrado."
-
-    if campo_vazio(qtd_vendida):
-        return 401, "Nao pode deixar campos vazios."
-
-    if not campo_inteiro_positivo(qtd_vendida):
-        return 401, "A quantidade vendida deve ser um numero inteiro maior que zero."
-
-    quantidade_vendida = int(str(qtd_vendida).strip())
-    stock_atual = produtos[id_produto]["quantidade_stock"]
-
-    if stock_atual < quantidade_vendida:
-        return 401, "Stock insuficiente."
-
-    produtos[id_produto]["quantidade_stock"] = stock_atual - quantidade_vendida
-    return 200, produtos[id_produto]
-
 
 def remover_produto(id_produto):
     if id_produto not in produtos:
