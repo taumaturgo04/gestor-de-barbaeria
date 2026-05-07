@@ -57,13 +57,13 @@ def listar_barbeiros():
 def consultar_barbeiro(id_barbeiro):
     # verifica se o ID pedido existe antes de mostrar
     if id_barbeiro not in barbeiros:
-        return 404, "Barbeiro nao encontrado."
+        return 404, "Barbeiro não encontrado."
 
     return 200, barbeiros[id_barbeiro]
 
 def atualizar_barbeiro(id_barbeiro, nome=None, especialidade=None, telefone=None, nif=None, iban=None, morada=None, email=None, id_barbearia=None):
     if id_barbeiro not in barbeiros:
-        return 404, "Barbeiro nao encontrado."
+        return 404, "Barbeiro não encontrado."
 
     # se o utilizador escrever apenas espaços, devolve erro
     if (
@@ -92,7 +92,7 @@ def atualizar_barbeiro(id_barbeiro, nome=None, especialidade=None, telefone=None
     if iban is not None and not campo_numerico(iban):
         return 401, "O IBAN deve conter apenas números."
 
-    # so atualiza os campos que o utilizador preencher
+    # só atualiza os campos que o utilizador preencher
     if nome:
         barbeiros[id_barbeiro]["nome"] = nome.strip()
     if especialidade:
