@@ -1,8 +1,36 @@
+import json
+import os
+
 from utils import campo_apenas_letras, campo_numerico, campo_vazio, gerar_id_cliente
+
+FICHEIRO_CLIENTES = "clientes.json"
 
 clientes = {}
 
+
+# ==========================
+# Persistência
+# ==========================
+def guardar_clientes():
+    with open(FICHEIRO_CLIENTES, "w", encoding="utf-8") as ficheiro:
+        json.dump(clientes, ficheiro, indent=4, ensure_ascii=False)
+
+
+def carregar_clientes():
+    global clientes
+
+    if os.path.exists(FICHEIRO_CLIENTES):
+        with open(FICHEIRO_CLIENTES, "r", encoding="utf-8") as ficheiro:
+            clientes = json.load(ficheiro)
+    else:
+        clientes = {}
+
+
+# ==========================
+# CREATE
+# ==========================
 def criar_cliente(id_barbearia, nome, telefone, nif, iban, morada, email):
+    carregar_clientes()
     
     # valida se os campos obrigatorios foram preenchidos
     if (
@@ -45,10 +73,16 @@ def criar_cliente(id_barbearia, nome, telefone, nif, iban, morada, email):
     }
     
     clientes[id_cliente] = cliente
+    guardar_clientes()
+    
     return 201, {"id_cliente": id_cliente, **cliente}
 
 
+# ==========================
+# READ ALL
+# ==========================
 def listar_clientes(id_barbearia=None):
+    carregar_clientes()
     
     if not clientes:
         return 404, "Não existem clientes registados."
@@ -69,7 +103,11 @@ def listar_clientes(id_barbearia=None):
     return 200, clientes
 
 
+# ==========================
+# READ ONE
+# ==========================
 def consultar_cliente(id_cliente, id_barbearia=None):
+    carregar_clientes()
   
     # verifica se o ID pedido existe antes de mostrar
     if id_cliente not in clientes:
@@ -84,7 +122,11 @@ def consultar_cliente(id_cliente, id_barbearia=None):
     return 200, {id_cliente: cliente}
 
 
+# ==========================
+# UPDATE
+# ==========================
 def atualizar_cliente(id_cliente, id_barbearia=None, nome=None, telefone=None, nif=None, iban=None, morada=None, email=None):
+    carregar_clientes()
   
     if id_cliente not in clientes:
         return 404, "Cliente não encontrado."
@@ -135,10 +177,16 @@ def atualizar_cliente(id_cliente, id_barbearia=None, nome=None, telefone=None, n
     if email:
         clientes[id_cliente]["email"] = email.strip()
     
+    guardar_clientes()
+    
     return 200, {id_cliente: clientes[id_cliente]}
 
 
+# ==========================
+# DELETE
+# ==========================
 def remover_cliente(id_cliente, id_barbearia=None):
+    carregar_clientes()
   
     if id_cliente not in clientes:
         return 404, "Cliente não encontrado."
@@ -151,5 +199,6 @@ def remover_cliente(id_cliente, id_barbearia=None):
     
     # apaga o registo do cliente do dicionario
     cliente_removido = clientes.pop(id_cliente)
+    guardar_clientes()
     
     return 200, {id_cliente: cliente_removido}
