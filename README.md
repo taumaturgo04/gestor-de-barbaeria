@@ -4,7 +4,7 @@ Um sistema completo de gestão para barbearias, desenvolvido em Python com funci
 
 ---
 
-## 📋 Sobre o Projeto
+## 📋 Sobre o Projet4
 
 O **Gestor de Barbearia** é uma aplicação desenvolvida para auxiliar no gerenciamento operacional de barbearias. O sistema permite gerenciar:
 
