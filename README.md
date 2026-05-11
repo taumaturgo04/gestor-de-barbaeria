@@ -1,4 +1,4 @@
-# 💈 Gestor de Barbearia
+# 💈 Gestor de Barbeari4
 
 Um sistema completo de gestão para barbearias, desenvolvido em Python com funcionalidades de CRUD para clientes, serviços, agendamentos e mais.
 
