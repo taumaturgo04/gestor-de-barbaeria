@@ -1,10 +1,39 @@
+import json
+import os
+
 from utils import campo_apenas_letras, campo_numerico, campo_vazio, gerar_id_barbeiro
 
+
+FICHEIRO_BARBEIROS = "barbeiros.json"
 
 # dicionario em mémoria para guardar os barbeiros
 barbeiros = {}
 
+
+# ==========================
+# Persistência
+# ==========================
+def guardar_barbeiros():
+    with open(FICHEIRO_BARBEIROS, "w", encoding="utf-8") as ficheiro:
+        json.dump(barbeiros, ficheiro, indent=4, ensure_ascii=False)
+
+
+def carregar_barbeiros():
+    global barbeiros
+
+    if os.path.exists(FICHEIRO_BARBEIROS):
+        with open(FICHEIRO_BARBEIROS, "r", encoding="utf-8") as ficheiro:
+            barbeiros = json.load(ficheiro)
+    else:
+        barbeiros = {}
+
+
+# ==========================
+# CREATE
+# ==========================
 def criar_barbeiro(nome, especialidade, telefone, nif, iban, morada, email, id_barbearia):
+    carregar_barbeiros()
+
     # valida se os campos obrigatorios foram preenchidos
     if (
         campo_vazio(nome)
@@ -45,23 +74,42 @@ def criar_barbeiro(nome, especialidade, telefone, nif, iban, morada, email, id_b
         "id_barbearia": id_barbearia.strip(),
     }
     barbeiros[id_barbeiro] = barbeiro
+    guardar_barbeiros()
 
     return 201, barbeiro
 
+
+# ==========================
+# READ ALL
+# ==========================
 def listar_barbeiros():
+    carregar_barbeiros()
+
     if not barbeiros:
         return 404, "Não existem barbeiros registados."
 
     return 200, barbeiros
 
+
+# ==========================
+# READ ONE
+# ==========================
 def consultar_barbeiro(id_barbeiro):
+    carregar_barbeiros()
+
     # verifica se o ID pedido existe antes de mostrar
     if id_barbeiro not in barbeiros:
         return 404, "Barbeiro não encontrado."
 
     return 200, barbeiros[id_barbeiro]
 
+
+# ==========================
+# UPDATE
+# ==========================
 def atualizar_barbeiro(id_barbeiro, nome=None, especialidade=None, telefone=None, nif=None, iban=None, morada=None, email=None, id_barbearia=None):
+    carregar_barbeiros()
+
     if id_barbeiro not in barbeiros:
         return 404, "Barbeiro não encontrado."
 
@@ -110,13 +158,23 @@ def atualizar_barbeiro(id_barbeiro, nome=None, especialidade=None, telefone=None
     if id_barbearia:
         barbeiros[id_barbeiro]["id_barbearia"] = id_barbearia.strip()
 
+    guardar_barbeiros()
+
     return 200, barbeiros[id_barbeiro]
 
+
+# ==========================
+# DELETE
+# ==========================
 def remover_barbeiro(id_barbeiro):
+    carregar_barbeiros()
+
     if id_barbeiro not in barbeiros:
         return 404, "Barbeiro não encontrado."
 
     # apaga o registo do barbeiro do dicionario
     barbeiro_removido = barbeiros[id_barbeiro]
     del barbeiros[id_barbeiro]
+    guardar_barbeiros()
+
     return 200, barbeiro_removido

@@ -1,12 +1,40 @@
+import json
+import os
+
 from barbeiro import consultar_barbeiro
 from cliente import consultar_cliente
 from utils import campo_vazio, gerar_id_agendamento, validar_data_hora
 
 
+FICHEIRO_AGENDAMENTOS = "agendamentos.json"
+
 agendamentos = {}
 
 
+# ==========================
+# Persistência
+# ==========================
+def guardar_agendamentos():
+    with open(FICHEIRO_AGENDAMENTOS, "w", encoding="utf-8") as ficheiro:
+        json.dump(agendamentos, ficheiro, indent=4, ensure_ascii=False)
+
+
+def carregar_agendamentos():
+    global agendamentos
+
+    if os.path.exists(FICHEIRO_AGENDAMENTOS):
+        with open(FICHEIRO_AGENDAMENTOS, "r", encoding="utf-8") as ficheiro:
+            agendamentos = json.load(ficheiro)
+    else:
+        agendamentos = {}
+
+
+# ==========================
+# CREATE
+# ==========================
 def criar_agendamento(data_hora, id_cliente, id_barbeiro, servico, id_barbearia):
+    carregar_agendamentos()
+
     if campo_vazio(data_hora) or campo_vazio(id_cliente) or campo_vazio(id_barbeiro) or campo_vazio(servico) or campo_vazio(id_barbearia):
         return 401, "Nao pode deixar campos vazios."
 
@@ -33,25 +61,41 @@ def criar_agendamento(data_hora, id_cliente, id_barbeiro, servico, id_barbearia)
         "status": "Pendente",
     }
     agendamentos[id_agendamento] = agendamento
+    guardar_agendamentos()
 
     return 201, agendamento
 
 
+# ==========================
+# READ ALL
+# ==========================
 def listar_agendamentos():
+    carregar_agendamentos()
+
     if not agendamentos:
         return 404, "Nao existem agendamentos registados."
 
     return 200, agendamentos
 
 
+# ==========================
+# READ ONE
+# ==========================
 def consultar_agendamento(id_agendamento):
+    carregar_agendamentos()
+
     if id_agendamento not in agendamentos:
         return 404, "Agendamento nao encontrado."
 
     return 200, agendamentos[id_agendamento]
 
 
+# ==========================
+# UPDATE
+# ==========================
 def atualizar_status(id_agendamento, novo_status):
+    carregar_agendamentos()
+
     if id_agendamento not in agendamentos:
         return 404, "Agendamento nao encontrado."
 
@@ -59,13 +103,22 @@ def atualizar_status(id_agendamento, novo_status):
         return 401, "Nao pode deixar campos vazios."
 
     agendamentos[id_agendamento]["status"] = novo_status.strip()
+    guardar_agendamentos()
+
     return 200, agendamentos[id_agendamento]
 
 
+# ==========================
+# DELETE
+# ==========================
 def eliminar_agendamento(id_agendamento):
+    carregar_agendamentos()
+
     if id_agendamento not in agendamentos:
         return 404, "Agendamento nao encontrado."
 
     agendamento_removido = agendamentos[id_agendamento]
     del agendamentos[id_agendamento]
+    guardar_agendamentos()
+
     return 200, agendamento_removido
