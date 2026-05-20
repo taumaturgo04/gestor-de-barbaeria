@@ -1,26 +1,26 @@
 ```markdown
-# 💈 Gestor de Barbearia
+💈 Gestor de Barbearia
 
 Um sistema completo de gestão para barbearias desenvolvido em Python.
 
 ---
 
-## 📋 Sobre o Projeto
+📋 Sobre o Projeto
 
 O **Gestor de Barbearia** é uma aplicação de desktop/console para auxiliar na administração de barbearias. Permite gerir clientes, barbeiros, barbearias, produtos, agendamentos e stock de forma simples e eficiente.
 
 ---
 
-## ✨ Funcionalidades Atuais (Fase 1)
+✨ Funcionalidades Atuais (Fase 1)
 
-### ✅ Módulos Completos
+ ✅ Módulos Completos
 - **Barbearias** — Gestão de múltiplas unidades/filiais
 - **Barbeiros** — Cadastro e gestão de profissionais
 - **Clientes** — Cadastro, listagem e histórico
 - **Produtos** — Gestão de stock e produtos à venda
 - **Agendamentos** — Marcação e controlo de horários
 
-### 🔧 Funcionalidades Comuns
+ 🔧 Funcionalidades Comuns
 - CRUD completo (Criar, Ler, Atualizar, Eliminar)
 - Logging detalhado em ficheiros separados
 - Validações rigorosas de dados
@@ -30,7 +30,7 @@ O **Gestor de Barbearia** é uma aplicação de desktop/console para auxiliar na
 
 ---
 
-## 📁 Estrutura do Projeto
+📁 Estrutura do Projeto
 
 ```bash
 gestor-de-barbearia/
@@ -144,22 +144,3 @@ Contribuições são bem-vindas! Sinta-se à vontade para:
 - Reportar bugs
 - Sugerir melhorias
 - Criar pull requests
-
----
-
-**Desenvolvido com ❤️ para barbearias portuguesas**
-```
-
----
-
-### Quer que eu faça agora algum destes ficheiros?
-
-Diz-me o que queres a seguir:
-
-1. `main.py` (menu interativo)
-2. `requirements.txt`
-3. Melhorar as **entidades.py**
-4. Criar o módulo `agendamentos.py` (já tens o código base)
-5. Qualquer outra coisa
-
-É só falar!
