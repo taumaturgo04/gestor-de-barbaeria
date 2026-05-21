@@ -138,3 +138,4 @@ def gerar_id_barbearia():
     proximo_id_barbearia += 1
     logger.debug("Gerado ID Barbearia: %s", id_barbearia)
     return id_barbearia
+
