@@ -145,4 +145,89 @@ def consultar_barbeiro(id_barbeiro):
 # ==========================
 def atualizar_barbeiro(id_barbeiro, nome=None, especialidade=None, telefone=None, nif=None, 
                        iban=None, morada=None, email=None, id_barbearia=None):
-    logger.info("Tentativa de atualizar barbeiro: %s", id
+    logger.info("Tentativa de atualizar barbeiro: %s", id_barbeiro)
+    
+    carregar_barbeiros()
+    
+    if id_barbeiro not in barbeiros:
+        logger.warning("Barbeiro não encontrado para atualização: %s", id_barbeiro)
+        return 404, "Barbeiro não encontrado."
+
+    barbeiro = barbeiros[id_barbeiro]
+
+    if id_barbearia and barbeiro.get("id_barbearia") != str(id_barbearia).strip():
+        logger.warning("Atualização não autorizada para barbeiro %s", id_barbeiro)
+        return 403, "Não tem permissão para atualizar este barbeiro."
+
+    if (
+        (nome is not None and campo_vazio(nome))
+        or (especialidade is not None and campo_vazio(especialidade))
+        or (telefone is not None and campo_vazio(telefone))
+        or (nif is not None and campo_vazio(nif))
+        or (iban is not None and campo_vazio(iban))
+        or (morada is not None and campo_vazio(morada))
+        or (email is not None and campo_vazio(email))
+    ):
+        logger.warning("Tentativa de atualização com campos vazios")
+        return 401, "Não pode deixar campos vazios."
+
+    if nome is not None and not campo_apenas_letras(nome):
+        logger.warning("Nome inválido na atualização")
+        return 401, "O nome deve conter apenas letras."
+
+    if especialidade is not None and not campo_apenas_letras(especialidade):
+        logger.warning("Especialidade inválida na atualização")
+        return 401, "A especialidade deve conter apenas letras."
+
+    if morada is not None and not campo_apenas_letras(morada):
+        logger.warning("Morada inválida na atualização")
+        return 401, "A morada deve conter apenas letras."
+
+    if telefone is not None and not campo_numerico(telefone):
+        logger.warning("Telefone inválido na atualização")
+        return 401, "O telefone deve conter apenas números."
+
+    if nif is not None and not campo_numerico(nif):
+        logger.warning("NIF inválido na atualização")
+        return 401, "O NIF deve conter apenas números."
+
+    if iban is not None and not campo_numerico(iban):
+        logger.warning("IBAN inválido na atualização")
+        return 401, "O IBAN deve conter apenas números."
+
+    # Atualiza apenas os campos enviados
+    if nome: barbeiros[id_barbeiro]["nome"] = nome.strip()
+    if especialidade: barbeiros[id_barbeiro]["especialidade"] = especialidade.strip()
+    if telefone: barbeiros[id_barbeiro]["telefone"] = telefone.strip()
+    if nif: barbeiros[id_barbeiro]["nif"] = nif.strip()
+    if iban: barbeiros[id_barbeiro]["iban"] = iban.strip()
+    if morada: barbeiros[id_barbeiro]["morada"] = morada.strip()
+    if email: barbeiros[id_barbeiro]["email"] = email.strip()
+    if id_barbearia: barbeiros[id_barbeiro]["id_barbearia"] = str(id_barbearia).strip()
+
+    guardar_barbeiros()
+
+    logger.info("Barbeiro atualizado com sucesso: %s", id_barbeiro)
+    return 200, {id_barbeiro: barbeiros[id_barbeiro]}
+
+
+def remover_barbeiro(id_barbeiro, id_barbearia=None):
+    logger.info("Tentativa de remover barbeiro: %s", id_barbeiro)
+    
+    carregar_barbeiros()
+    
+    if id_barbeiro not in barbeiros:
+        logger.warning("Barbeiro não encontrado para remoção: %s", id_barbeiro)
+        return 404, "Barbeiro não encontrado."
+
+    barbeiro = barbeiros[id_barbeiro]
+
+    if id_barbearia and barbeiro.get("id_barbearia") != str(id_barbearia).strip():
+        logger.warning("Remoção não autorizada para barbeiro %s", id_barbeiro)
+        return 403, "Não tem permissão para remover este barbeiro."
+
+    barbeiro_removido = barbeiros.pop(id_barbeiro)
+    guardar_barbeiros()
+
+    logger.info("Barbeiro removido com sucesso: %s - %s", id_barbeiro, barbeiro_removido.get("nome"))
+    return 200, {id_barbeiro: barbeiro_removido}
