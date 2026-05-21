@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 
-def logging(nome_logger=__name__, nivel=logging.INFO):
+def configurar_logging(nome_logger=__name__, nivel=logging.INFO):
     """Configuração centralizada de logging para o Gestor de Barbearia"""
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -33,3 +33,4 @@ def logging(nome_logger=__name__, nivel=logging.INFO):
 
 def get_logger(nome=""):
     return logging.getLogger(nome if nome else __name__)
+
