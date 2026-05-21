@@ -8,19 +8,7 @@ from utils import campo_vazio, gerar_id_agendamento, validar_data_hora
 FICHEIRO_AGENDAMENTOS = "agendamentos.json"
 agendamentos = {}
 
-# ==========================
-# Configuração do Logging
-# ==========================
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("agendamentos.log", encoding="utf-8"),
-        logging.StreamHandler()  # também mostra no console
-    ]
-)
-
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # ==========================
 # Persistência
