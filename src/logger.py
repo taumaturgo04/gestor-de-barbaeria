@@ -1,4 +1,4 @@
-from logger import get_logger
+import logging
 import os
 from datetime import datetime
 
