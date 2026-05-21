@@ -165,3 +165,4 @@ def eliminar_agendamento(id_agendamento):
     
     logger.info("Agendamento eliminado com sucesso: %s", id_agendamento)
     return 200, agendamento_removido
+
