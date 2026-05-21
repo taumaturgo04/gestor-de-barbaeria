@@ -195,3 +195,4 @@ def remover_produto(id_produto):
     
     logger.info("Produto removido com sucesso: %s - %s", id_produto, produto_removido.get("nome"))
     return 200, produto_removido
+
