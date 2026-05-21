@@ -71,8 +71,7 @@ def menu():
     print("22 - Listar produtos")
     print("23 - Consultar produto")
     print("24 - Atualizar produto")
-    print("25 - Vender produto")
-    print("26 - Remover produto")
+    print("25 - Remover produto")
     print("0 - Sair")
 
 
@@ -185,6 +184,7 @@ def main():
         elif opcao == "11":
             # cría um novo cliente com os dados introduzidos
             resultado = criar_cliente(
+                input("ID da barbearia: "),
                 input("Nome: "),
                 input("Telefone: "),
                 input("NIF: "),
@@ -204,6 +204,7 @@ def main():
             id_cliente = input("ID do cliente: ").strip()
             resultado = atualizar_cliente(
                 id_cliente,
+                ler_campo_opcional("ID da barbearia (enter para manter): "),
                 ler_campo_opcional("Novo nome (enter para manter): "),
                 ler_campo_opcional("Novo telefone (enter para manter): "),
                 ler_campo_opcional("Novo NIF (enter para manter): "),
@@ -267,13 +268,8 @@ def main():
                 ler_campo_opcional("Novo ID da barbearia (enter para manter): "),
             )
             mostrar_resultado(resultado)
+
         elif opcao == "25":
-            resultado = vender_produto(
-                input("ID do produto: ").strip(),
-                input("Quantidade vendida: "),
-            )
-            mostrar_resultado(resultado)
-        elif opcao == "26":
             mostrar_resultado(remover_produto(input("ID do produto: ").strip()))
         elif opcao == "0":
             print("Volte sempre!")
@@ -285,3 +281,4 @@ def main():
 if __name__ == "__main__":
     # executa o programa apenas quando este ficheiro e corrido diretamente
     main()
+
