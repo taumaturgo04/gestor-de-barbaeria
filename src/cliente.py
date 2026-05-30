@@ -1,28 +1,50 @@
 import json
 import os
-
+import logging
 from utils import campo_apenas_letras, campo_numerico, campo_vazio, gerar_id_cliente
 
 FICHEIRO_CLIENTES = "clientes.json"
-
 clientes = {}
 
+# ==========================
+# Configuração do Logging
+# ==========================
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("clientes.log", encoding="utf-8"),
+        logging.StreamHandler()  # Mostra também no console
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 # ==========================
 # Persistência
 # ==========================
 def guardar_clientes():
-    with open(FICHEIRO_CLIENTES, "w", encoding="utf-8") as ficheiro:
-        json.dump(clientes, ficheiro, indent=4, ensure_ascii=False)
+    try:
+        with open(FICHEIRO_CLIENTES, "w", encoding="utf-8") as ficheiro:
+            json.dump(clientes, ficheiro, indent=4, ensure_ascii=False)
+        logger.info("Clientes guardados com sucesso. Total: %d", len(clientes))
+    except Exception as e:
+        logger.error("Erro ao guardar clientes: %s", str(e))
+        raise
 
 
 def carregar_clientes():
     global clientes
-
-    if os.path.exists(FICHEIRO_CLIENTES):
-        with open(FICHEIRO_CLIENTES, "r", encoding="utf-8") as ficheiro:
-            clientes = json.load(ficheiro)
-    else:
+    try:
+        if os.path.exists(FICHEIRO_CLIENTES):
+            with open(FICHEIRO_CLIENTES, "r", encoding="utf-8") as ficheiro:
+                clientes = json.load(ficheiro)
+            logger.info("Clientes carregados com sucesso. Total: %d", len(clientes))
+        else:
+            clientes = {}
+            logger.info("Ficheiro de clientes não existe. Novo dicionário criado.")
+    except Exception as e:
+        logger.error("Erro ao carregar clientes: %s", str(e))
         clientes = {}
 
 
@@ -30,36 +52,36 @@ def carregar_clientes():
 # CREATE
 # ==========================
 def criar_cliente(id_barbearia, nome, telefone, nif, iban, morada, email):
+    logger.info("Tentativa de criar cliente: %s | Barbearia: %s", nome, id_barbearia)
+    
     carregar_clientes()
     
-    # valida se os campos obrigatorios foram preenchidos
-    if (
-        campo_vazio(nome)
-        or campo_vazio(telefone)
-        or campo_vazio(nif)
-        or campo_vazio(iban)
-        or campo_vazio(morada)
-        or campo_vazio(email)
-        or campo_vazio(id_barbearia)
-    ):
+    if (campo_vazio(nome) or campo_vazio(telefone) or campo_vazio(nif) or 
+        campo_vazio(iban) or campo_vazio(morada) or campo_vazio(email) or 
+        campo_vazio(id_barbearia)):
+        logger.warning("Tentativa de criar cliente com campos vazios")
         return 401, "Não pode deixar campos vazios."
     
     if not campo_apenas_letras(nome):
+        logger.warning("Nome inválido (apenas letras): %s", nome)
         return 401, "O nome deve conter apenas letras."
     
     if not campo_apenas_letras(morada):
+        logger.warning("Morada inválida (apenas letras)")
         return 401, "A morada deve conter apenas letras."
     
     if not campo_numerico(telefone):
+        logger.warning("Telefone inválido: %s", telefone)
         return 401, "O telefone deve conter apenas números."
     
     if not campo_numerico(nif):
+        logger.warning("NIF inválido: %s", nif)
         return 401, "O NIF deve conter apenas números."
     
     if not campo_numerico(iban):
+        logger.warning("IBAN inválido: %s", iban)
         return 401, "O IBAN deve conter apenas números."
     
-    # gera um ID sequencial no formato C001, C002, ...
     id_cliente = gerar_id_cliente()
     
     cliente = {
@@ -75,6 +97,7 @@ def criar_cliente(id_barbearia, nome, telefone, nif, iban, morada, email):
     clientes[id_cliente] = cliente
     guardar_clientes()
     
+    logger.info("Cliente criado com sucesso! ID: %s - Nome: %s", id_cliente, nome)
     return 201, {"id_cliente": id_cliente, **cliente}
 
 
@@ -84,23 +107,24 @@ def criar_cliente(id_barbearia, nome, telefone, nif, iban, morada, email):
 def listar_clientes(id_barbearia=None):
     carregar_clientes()
     
-    if not clientes:
-        return 404, "Não existem clientes registados."
-    
-    # Se id_barbearia foi fornecido, filtra apenas os clientes dessa barbearia
     if id_barbearia:
+        logger.info("Listagem de clientes para a barbearia: %s", id_barbearia)
         clientes_filtrados = {
-            id_cliente: dados 
-            for id_cliente, dados in clientes.items() 
+            cid: dados for cid, dados in clientes.items()
             if dados.get("id_barbearia") == str(id_barbearia).strip()
         }
         
         if not clientes_filtrados:
+            logger.info("Nenhum cliente encontrado para a barbearia %s", id_barbearia)
             return 404, f"Não existem clientes registados para a barbearia {id_barbearia}."
         
+        logger.info("%d clientes encontrados para a barbearia %s", len(clientes_filtrados), id_barbearia)
         return 200, clientes_filtrados
-    
-    return 200, clientes
+    else:
+        logger.info("Listagem de todos os clientes solicitada. Total: %d", len(clientes))
+        if not clientes:
+            return 404, "Não existem clientes registados."
+        return 200, clientes
 
 
 # ==========================
@@ -108,36 +132,40 @@ def listar_clientes(id_barbearia=None):
 # ==========================
 def consultar_cliente(id_cliente, id_barbearia=None):
     carregar_clientes()
-  
-    # verifica se o ID pedido existe antes de mostrar
+    
     if id_cliente not in clientes:
+        logger.warning("Cliente não encontrado: %s", id_cliente)
         return 404, "Cliente não encontrado."
     
     cliente = clientes[id_cliente]
     
-    # Se id_barbearia foi fornecido, valida se o cliente pertence a essa barbearia
     if id_barbearia and cliente.get("id_barbearia") != str(id_barbearia).strip():
+        logger.warning("Acesso não autorizado ao cliente %s pela barbearia %s", id_cliente, id_barbearia)
         return 403, "Não tem permissão para acessar este cliente."
     
+    logger.info("Cliente consultado: %s", id_cliente)
     return 200, {id_cliente: cliente}
 
 
 # ==========================
 # UPDATE
 # ==========================
-def atualizar_cliente(id_cliente, id_barbearia=None, nome=None, telefone=None, nif=None, iban=None, morada=None, email=None):
+def atualizar_cliente(id_cliente, id_barbearia=None, nome=None, telefone=None, nif=None, 
+                      iban=None, morada=None, email=None):
+    logger.info("Tentativa de atualizar cliente: %s", id_cliente)
+    
     carregar_clientes()
-  
+    
     if id_cliente not in clientes:
+        logger.warning("Cliente não encontrado para atualização: %s", id_cliente)
         return 404, "Cliente não encontrado."
     
     cliente = clientes[id_cliente]
     
-    # Se id_barbearia foi fornecido, valida se o cliente pertence a essa barbearia
     if id_barbearia and cliente.get("id_barbearia") != str(id_barbearia).strip():
+        logger.warning("Atualização não autorizada para cliente %s", id_cliente)
         return 403, "Não tem permissão para atualizar este cliente."
     
-    # se o utilizador escrever apenas espaços, devolve erro
     if (
         (nome is not None and campo_vazio(nome))
         or (telefone is not None and campo_vazio(telefone))
@@ -146,39 +174,40 @@ def atualizar_cliente(id_cliente, id_barbearia=None, nome=None, telefone=None, n
         or (morada is not None and campo_vazio(morada))
         or (email is not None and campo_vazio(email))
     ):
+        logger.warning("Tentativa de atualização com campos vazios")
         return 401, "Não pode deixar campos vazios."
     
     if nome is not None and not campo_apenas_letras(nome):
+        logger.warning("Nome inválido na atualização")
         return 401, "O nome deve conter apenas letras."
     
     if morada is not None and not campo_apenas_letras(morada):
+        logger.warning("Morada inválida na atualização")
         return 401, "A morada deve conter apenas letras."
     
     if telefone is not None and not campo_numerico(telefone):
+        logger.warning("Telefone inválido na atualização")
         return 401, "O telefone deve conter apenas números."
     
     if nif is not None and not campo_numerico(nif):
+        logger.warning("NIF inválido na atualização")
         return 401, "O NIF deve conter apenas números."
     
     if iban is not None and not campo_numerico(iban):
+        logger.warning("IBAN inválido na atualização")
         return 401, "O IBAN deve conter apenas números."
     
-    # só atualiza os campos que o utilizador preencher
-    if nome:
-        clientes[id_cliente]["nome"] = nome.strip()
-    if telefone:
-        clientes[id_cliente]["telefone"] = telefone.strip()
-    if nif:
-        clientes[id_cliente]["nif"] = nif.strip()
-    if iban:
-        clientes[id_cliente]["iban"] = iban.strip()
-    if morada:
-        clientes[id_cliente]["morada"] = morada.strip()
-    if email:
-        clientes[id_cliente]["email"] = email.strip()
+    # Atualiza apenas os campos enviados
+    if nome: clientes[id_cliente]["nome"] = nome.strip()
+    if telefone: clientes[id_cliente]["telefone"] = telefone.strip()
+    if nif: clientes[id_cliente]["nif"] = nif.strip()
+    if iban: clientes[id_cliente]["iban"] = iban.strip()
+    if morada: clientes[id_cliente]["morada"] = morada.strip()
+    if email: clientes[id_cliente]["email"] = email.strip()
     
     guardar_clientes()
     
+    logger.info("Cliente atualizado com sucesso: %s", id_cliente)
     return 200, {id_cliente: clientes[id_cliente]}
 
 
@@ -186,19 +215,22 @@ def atualizar_cliente(id_cliente, id_barbearia=None, nome=None, telefone=None, n
 # DELETE
 # ==========================
 def remover_cliente(id_cliente, id_barbearia=None):
+    logger.info("Tentativa de remover cliente: %s", id_cliente)
+    
     carregar_clientes()
-  
+    
     if id_cliente not in clientes:
+        logger.warning("Cliente não encontrado para remoção: %s", id_cliente)
         return 404, "Cliente não encontrado."
     
     cliente = clientes[id_cliente]
     
-    # Se id_barbearia foi fornecido, valida se o cliente pertence a essa barbearia
     if id_barbearia and cliente.get("id_barbearia") != str(id_barbearia).strip():
+        logger.warning("Remoção não autorizada para cliente %s", id_cliente)
         return 403, "Não tem permissão para remover este cliente."
     
-    # apaga o registo do cliente do dicionario
     cliente_removido = clientes.pop(id_cliente)
     guardar_clientes()
     
+    logger.info("Cliente removido com sucesso: %s - %s", id_cliente, cliente_removido.get("nome"))
     return 200, {id_cliente: cliente_removido}
