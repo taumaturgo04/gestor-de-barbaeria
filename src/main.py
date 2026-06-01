@@ -1,4 +1,3 @@
-# importa as funções de gestão de barbearias
 from barbearia import (
     criar_barbearia,
     listar_barbearias,
@@ -34,10 +33,8 @@ from produto import (
     listar_produtos,
     consultar_produto,
     atualizar_produto,
-    vender_produto,
     remover_produto,
 )
-
 
 def menu():
     # mostra as opções disponíveis no terminal
